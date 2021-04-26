@@ -1,40 +1,49 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import {
   ChakraProvider,
   Box,
   Text,
-  Link,
-  VStack,
-  Code,
-  Grid,
   theme,
 } from '@chakra-ui/react';
-import { ColorModeSwitcher } from './ColorModeSwitcher';
-import { Logo } from './Logo';
+
+import { Provider as AuthProvider } from './AuthContext';
+import { Provider as UIProvider } from './UIContext';
+import AuthenticateMe from './AuthenticateMe';
 
 function App() {
+  const [authenticated, setAuthenticated] = useState(false);
+  const [nickname, setNickname] = useState('');
+
+  const defaultAuthContextValues = {
+    authenticated,
+    setAuthenticated,
+    nickname,
+    setNickname,
+  };
+
+  useEffect(() => {
+    // TODO: load from localStorage
+    const isAuthenticated = JSON.parse(localStorage.getItem('isAuthenticated') || false)
+    console.log('isAuthenticated: ', isAuthenticated);
+  }, []);
+
+  const defaultUIContextValues = {
+    notifications: [],
+    setNotifications: () => {},
+    color: 'blue',
+    customer: 'cocacola',
+  };
+
   return (
     <ChakraProvider theme={theme}>
-      <Box textAlign="center" fontSize="xl">
-        <Grid minH="100vh" p={3}>
-          <ColorModeSwitcher justifySelf="flex-end" />
-          <VStack spacing={8}>
-            <Logo h="40vmin" pointerEvents="none" />
-            <Text>
-              Edit <Code fontSize="xl">src/App.js</Code> and save to reload.
-            </Text>
-            <Link
-              color="teal.500"
-              href="https://chakra-ui.com"
-              fontSize="2xl"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learn Chakra
-            </Link>
-          </VStack>
-        </Grid>
-      </Box>
+      <AuthProvider value={defaultAuthContextValues}>
+        <UIProvider value={defaultUIContextValues}>
+          <Box>
+            <Text as="h1">Uzytkownik {authenticated ? `jest zalogowany (${nickname})` : 'nie jest zalogowany'}</Text>
+          </Box>
+          {!authenticated && <AuthenticateMe />}
+        </UIProvider>
+      </AuthProvider>
     </ChakraProvider>
   );
 }
